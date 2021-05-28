@@ -308,10 +308,10 @@ k8s对外提供服务的方式，目前经常使用的有两种，clusterip, 和
 ```kubectl get svc```查看
 
 ---
-# controller
+# workload
 
-如果定义一个pod，则只是运行一个pod，但是需要多副本的管理，就要用到k8s的contrallor类型的组件。
-contrallor的作用是：根据声明的副本数创建并调度指定数量的pod
+如果定义一个pod，则只是运行一个pod，但是需要多副本的管理，就要用到k8s的工作负载类型的组件。
+工作负载的作用是：根据声明创建并调度pod。
 - ReplicaSet
 	早期的调度组件，现在已经不推荐直接使用
 
