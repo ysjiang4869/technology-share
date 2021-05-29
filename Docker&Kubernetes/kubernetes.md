@@ -271,6 +271,8 @@ k8s把docker中容器级别的隔离，变成了pod级别的隔离。
 workload声明了如何管理pod，但是pod的网络依旧是隔离的，Service用来声明pod如何对外提供服务。
 pod在创建的时候，就提供了pod-ip，通过pod-ip+容器的端口可以访问pod。但是pod更新后ip会发生变化，不可能手动为同一服务的pod配置ip。
 service则可以管理一组pod，service创建后，也会生成对应的service-ip，service通过标签匹配pod，监控具有指定标签的pod变化，访问service-ip可以路由到被service管理的pod。
+
+---
 service的种类：
 - clusterip：ip只能在集群内访问，即只有在集群内的node上才能访问
 - nodeport：会生成一个物理机端口，可以通过物理机ip进行访问
