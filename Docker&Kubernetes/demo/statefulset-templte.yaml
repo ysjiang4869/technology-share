@@ -1,0 +1,99 @@
+# %var% means variables need to modify
+# variables there are: appname, port, count, image
+# use sed -i command to replace those variable
+
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: %appname%
+data:
+  application-%appname%.properties: |
+
+    # put your properties here
+
+---
+
+# normal service for load balancer
+kind: Service
+apiVersion: v1
+metadata:
+  name: %appname%
+  labels:
+    name: %appname%
+spec:
+  type: NodePort
+# open this can make same ip request transfer to same client
+#  sessionAffinity: ClientIP
+# open this can disable request transmit to other node, when use nodeip:port, it will only use pods in this node
+#  externalTrafficPolicy: Local
+  ports:
+    - port: %port%
+      targetPort: %port%
+      nodePort: %nodeport%
+  selector:
+    app: %appname%
+
+---
+
+# headless service for stateful set
+kind: Service
+apiVersion: v1
+metadata:
+  name: %appname%-headless
+  labels:
+    name: %appname%
+spec:
+  ports:
+    - port: %port%
+  clusterIp: None
+  selector:
+    app: %appname%
+
+---
+
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: %appname%
+  labels:
+    name: %appname%
+spec:
+  serviceName: "%appname%-headless"
+  replicas: %count%
+  selector:
+    matchLabels:
+      app: %appname%
+  template:
+    metadata:
+      labels:
+        name: %appname%
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: %appname%
+          image: %image%
+          env:
+            - name: TOTAL_SERVICE_COUNT
+              value: "%count%"
+          ports:
+            - containerPort: %port%
+          volumeMounts:
+            - name: config              
+              mountPath: /usr/local/app/config
+            - name: viid-pv
+              mountPath: /home
+          args:
+            - -j
+            - viid-car-1.0.0.jar
+            # only override configs in configmap
+            - --spring.profiles.active=%appname%
+            - --spring.profiles.include=product
+            # update version can triger deployment to update
+            - --version=0
+      volumes:
+        - name: config
+          configMap:
+            name: %appname%
+        - name: viid-pv
+          persistentVolumeClaim:
+            claimName: viid-pv-claim
